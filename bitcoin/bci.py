@@ -11,6 +11,11 @@ try:
 except:
     from urllib2 import build_opener
 
+try:
+    range = xrange
+except:
+    pass
+
 
 # Makes a request to a given URL (first arg) and optional params (second arg)
 def make_request(*args):
@@ -29,6 +34,13 @@ def make_request(*args):
 
 def is_testnet(inp):
     '''Checks if inp is a testnet address or if UTXO is a known testnet TxID''' 
+
+    try:
+        basestring = basestring
+    except NameError:
+        # 'basestring' is undefined, must be Python 3
+        basestring = (str,bytes)
+
     if isinstance(inp, (list, tuple)) and len(inp) >= 1:
         return any([is_testnet(x) for x in inp])
     elif not isinstance(inp, basestring):    # sanity check
@@ -70,6 +82,13 @@ def set_network(*args):
     for arg in args:
         if not arg: 
             pass
+
+        try:
+            basestring = basestring
+        except NameError:
+            # 'basestring' is undefined, must be Python 3
+            basestring = (str,bytes)
+    
         if isinstance(arg, basestring):
             r.append(is_testnet(arg))
         elif isinstance(arg, (list, tuple)):
@@ -169,7 +188,7 @@ def helloblock_unspent(*args):
         url = 'https://mainnet.helloblock.io/v1/addresses/%s/unspents?limit=500&offset=%s'
     o = []
     for addr in addrs:
-        for offset in xrange(0, 10**9, 500):
+        for offset in range(0, 10**9, 500):
             res = make_request(url % (addr, offset))
             data = json.loads(res.decode("utf-8"))["data"]
             if not len(data["unspents"]):
